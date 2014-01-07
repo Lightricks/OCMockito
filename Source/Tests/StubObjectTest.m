@@ -38,6 +38,7 @@ typedef struct {
 - (id)methodReturningObjectWithArg:(id)arg { return self; }
 - (id)methodReturningObjectWithIntArg:(int)arg { return self; }
 - (id)methodReturningObjectWithBlockArg:(StubObjectBlockArgument)arg { return self; }
+- (id)methodReturningObjectWithStruct:(aStruct)arg { return self; }
 
 - (BOOL)methodReturningBool { return NO; }
 - (char)methodReturningChar { return 0; }
@@ -113,6 +114,29 @@ typedef struct {
 {
     [given([mockObject methodReturningObjectWithArg:equalTo(@"foo")]) willReturn:@"FOO"];
     assertThat([mockObject methodReturningObjectWithArg:@"foo"], is(@"FOO"));
+}
+
+- (void)testStub_ShouldReturnValueForSameStructArgument
+{
+    aStruct someStruct = { 1, 2.f };
+    [given([mockObject methodReturningObjectWithStruct:someStruct]) willReturn:@"FOO"];
+    assertThat([mockObject methodReturningObjectWithStruct:someStruct], is(@"FOO"));
+}
+
+- (void)testStub_ShouldReturnValueForMatchingStructArgument
+{
+    aStruct someStructA = { 1, 2.f };
+    aStruct someStructB = { 1, 2.f };
+    [given([mockObject methodReturningObjectWithStruct:someStructA]) willReturn:@"FOO"];
+    assertThat([mockObject methodReturningObjectWithStruct:someStructB], is(@"FOO"));
+}
+
+- (void)testStub_ShoulReturnNilForNotMatchingStructArgument
+{
+    aStruct someStructA = { 1, 2.f };
+    aStruct someStructB = { 3, 4.f };
+    [given([mockObject methodReturningObjectWithStruct:someStructA]) willReturn:@"FOO"];
+    assertThat([mockObject methodReturningObjectWithStruct:someStructB], is(nilValue()));
 }
 
 - (void)testStub_ShouldReturnValueForMatchingNumericArgument

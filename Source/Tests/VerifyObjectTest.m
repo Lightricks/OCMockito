@@ -20,6 +20,11 @@
     #import <OCHamcrestIOS/OCHamcrestIOS.h>
 #endif
 
+typedef struct {
+  int anInt;
+  float aFloat;
+} aStruct;
+
 @interface TestObject : NSObject
 @end
 
@@ -27,6 +32,7 @@
 - (void)methodWithClassArg:(Class)class { return; }
 - (id)methodWithError:(NSError * __strong *)error { return nil; }
 - (void)methodWithSelector:(SEL)selector { return; }
+- (void)methodWithStruct:(aStruct)aStruct { return; }
 @end
 
 
@@ -255,6 +261,33 @@
     TestObject *testMock = mock([TestObject class]);
     [testMock methodWithSelector:_cmd];
     [verify(testMock) methodWithSelector:_cmd];
+}
+
+- (void)testVerifyWithNotNilStructArgMatchingValueSamePointer
+{
+    TestObject *testMock = mock([TestObject class]);
+    aStruct someStruct = {1, 2.f};
+    [testMock methodWithStruct:someStruct];
+    [verify(testMock) methodWithStruct:someStruct];
+}
+
+- (void)testVerifyWithNotNilStructArgMatchingValueSameContent
+{
+    TestObject *testMock = mock([TestObject class]);
+    aStruct someStructA = {1, 2.f};
+    aStruct someStructB = {1, 2.f};
+    [testMock methodWithStruct:someStructA];
+    [verify(testMock) methodWithStruct:someStructB];
+}
+
+- (void)testVerifyWithNotNilStructArgNotMatchingDifferentContent
+{
+    TestObject *testMock = mock([TestObject class]);
+    aStruct someStructA = {1, 2.f};
+    aStruct someStructB = {3, 4.f};
+    [testMock methodWithStruct:someStructA];
+    [verifyWithMockTestCase(testMock) methodWithStruct:someStructB];
+    assertThatUnsignedInteger(mockTestCase.failureCount, is(equalTo(@1)));
 }
 
 @end

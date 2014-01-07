@@ -137,6 +137,14 @@ NSArray *TKArrayArgumentsForInvocation(NSInvocation *invocation)
             [invocation getArgument:&arg atIndex:i];
             [args insertObject:[NSValue valueWithPointer:arg] atIndex:ai];
         }
+        else if (argType[0] == '{')
+        {
+            NSUInteger structSize;
+            NSGetSizeAndAlignment(argType, &structSize, NULL);
+            NSMutableData *data = [NSMutableData dataWithLength:structSize];
+            [invocation getArgument:data.mutableBytes atIndex:i];
+            [args insertObject:data atIndex:ai];
+        }
         else
         {
             NSCAssert1(NO, @"-- Unhandled type: %s", argType);
